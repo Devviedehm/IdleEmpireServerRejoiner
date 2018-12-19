@@ -1,0 +1,144 @@
+<html>
+<head>
+<style>
+*{ color: #f2f2fd; background: #16161d; }
+input{ text-align:right; }
+</style>
+<script type="text/javascript">
+var pre, txtH, txtM, txtS, btnI, btnN, selS, span, stat, intS = 0, intV;
+
+var servers = [
+	[ "Server #13", "steam://connect/93.186.198.123:28015" ],
+	[ "Server #14", "steam://connect/93.186.198.123:28115" ],
+	[ "Server #15", "steam://connect/93.186.198.123:28215" ],
+	[ "Server #16", "steam://connect/93.186.198.123:28315" ],
+	[ "Server #17", "steam://connect/93.186.198.123:28415" ],
+	[ "Server #18", "steam://connect/93.186.198.123:28515" ],
+	[ "Server #19", "steam://connect/93.186.198.123:28615" ],
+	[ "Server #20", "steam://connect/93.186.198.123:28715" ],
+	[ "Server #21", "steam://connect/93.186.198.123:28815" ]
+];
+
+function saveVars(){
+	var saveString = txtH.value+"\n"+txtM.value+"\n"+txtS.value+"\n"+selS.value;
+	localStorage.setItem( "devviedehm_serverrejoin_vars", saveString );
+}
+
+function loadVars(){
+	var loadString = localStorage.getItem( "devviedehm_serverrejoin_vars" );
+	if( loadString == null ) return;
+	var loadVars = loadString.split( "\n" );
+	txtH.value = loadVars[0];
+	txtM.value = loadVars[1];
+	txtS.value = loadVars[2];
+	selS.value = loadVars[3];
+}
+
+function log( msg ){
+	var now = new Date();
+	var txt = now.toISOString();
+	pre.innerText += "\n"+txt.substr( 0, txt.indexOf("T") )+" "+txt.substr( txt.indexOf("T")+1, 8 )+" - "+msg;
+}
+
+function conn(){
+	window.location = servers[selS.value][1];
+}
+
+function startInterval(){
+	if( intS == 0 ){
+		var hh = parseInt( txtH.value ),
+		 mm = parseInt( txtM.value ),
+		 ss = parseInt( txtS.value );
+		if( hh == NaN ) hh=0;
+		if( mm == NaN ) mm=0;
+		if( ss == NaN ) ss=0;
+		var tt = ss*1000 + mm*60000 + hh*3600000;
+		intV = setInterval( ()=>{ conn(); log("Auto-reconnect issued."); }, tt );
+		intS = 1;
+		stat.style.color = "#0f0";
+		stat.innerText = "ON";
+		log( "Interval started." );
+	} else {
+		clearInterval( intV );
+		intS = 0;
+		stat.style.color = "#f00";
+		stat.innerText = "OFF";
+		log( "Interval stopped." );
+	}
+	saveVars();
+}
+
+window.addEventListener( "load", window_loaded );
+
+function window_loaded(){
+	var t;
+	span = document.createElement( "span" );
+	
+	txtH = document.createElement( "input" );
+	txtH.placeholder = "Hours";
+	txtH.value = 0;
+	txtH.size = 4;
+	span.appendChild( txtH );
+	t = document.createTextNode( "H " );
+	span.appendChild( t );
+	txtM = document.createElement( "input" );
+	txtM.placeholder = "Minutes";
+	txtM.value = 30;
+	txtM.size = 4;
+	span.appendChild( txtM );
+	t = document.createTextNode( "M " );
+	span.appendChild( t );
+	txtS = document.createElement( "input" );
+	txtS.placeholder = "Seconds";
+	txtS.value = 0;
+	txtS.size = 4;
+	span.appendChild( txtS );
+	t = document.createTextNode( "S " );
+	span.appendChild( t );
+	
+	selS = document.createElement( "select" );
+	for( var i=0; i<servers.length; i++ ){
+		selS.innerHTML += "<option value=\""+i+"\">"+servers[i][0]+"</option>\n";
+	}
+	span.appendChild( selS );
+	t = document.createTextNode( " " );
+	span.appendChild( t );
+	
+	btnI = document.createElement( "input" );
+	btnI.type = "button";
+	btnI.value = "Start/Stop interval";
+	btnI.addEventListener( "click", startInterval );
+	span.appendChild( btnI );
+	t = document.createTextNode( " " );
+	span.appendChild( t );
+	
+	btnN = document.createElement( "input" );
+	btnN.type = "button";
+	btnN.value = "Connect now";
+	btnN.addEventListener( "click", ()=>{ conn(); log( "Manual connect." ); saveVars(); } );
+	span.appendChild( btnN );
+	t = document.createTextNode( " " );
+	span.appendChild( t );
+	
+	t = document.createTextNode( "Interval: " );
+	span.appendChild( t );
+	stat = document.createElement( "span" );
+	stat.style.fontWeight = "bold";
+	stat.style.color = "#f00";
+	stat.innerText = "OFF";
+	span.appendChild( stat );
+	t = document.createElement( "hr" );
+	span.appendChild( t );
+	
+	document.body.appendChild( span );
+	pre = document.createElement( "pre" );
+	pre.innerText = "YYYY-MM-DD HH:MM:SS - Reconnection message format.";
+	document.body.appendChild( pre );
+	
+	loadVars();
+}
+
+</script>
+</head>
+<body></body>
+</html>
